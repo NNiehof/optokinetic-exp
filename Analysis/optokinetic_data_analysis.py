@@ -3,20 +3,21 @@ Some first plots of individual subject data
 """
 
 import numpy as np
+import scipy.io
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 from psychometric_curve_fit import *
 from fit_sinusoid import plot_sinusoid_data, fit_sine_fixed_freq
 
-debug = True
+debug = False
 
 # read in dataframe
 df = pd.read_pickle('U:\Documents\Optokinetic experiment\optokinetic_data_all_sj.pkl')
 subjects = sorted(df['sj_id'].unique())
 conditions = ['CCW', 'NONE', 'CW']
 frame_angles = ['-45', '-33.75', '-22.5', '-11.25', '0', '11.25', '22.5', '33.75', 'noframe']
-stimRange   = np.arange(-30, 30, 0.5)
+stimRange = np.arange(-30, 30, 0.5)
 
 if debug:
     subjects = [0, 1]
@@ -52,8 +53,7 @@ for sj in subjects:
     sine_rmse[sj] = {}
     
     fig1 = plt.figure()
-    plt.hold(True)
-       
+
     for i_cond, cond in enumerate(conditions):
         pselist = []
         stdlist = []
@@ -115,7 +115,7 @@ for sj in subjects:
         bias_guesses = np.linspace(-10, 10, 5)
         period = np.pi/2.0 # one period goes from -45 to 45 deg
         
-        # frame=45° point not included in fit because it is a duplicate of the -45° data point
+        # frame=45 point not included in fit because it is a duplicate of the -45 data point
         amp, phaseshift, bias, rmse = fit_sine_fixed_freq(frames_rad[0:-1], pselist, amp_guesses,
                                               phase_guesses, bias_guesses, period)
         rmse_list.append(rmse)
@@ -172,6 +172,10 @@ if not debug:
         pickle.dump(std_frame, fhandle)
     with open('noframe_pse_all_sj.pkl', 'wb') as fhandle:
         pickle.dump(noframe_pse, fhandle)
+    scipy.io.savemat('pse_all_sj.mat', mdict={'pse_frame': pse,
+                                              'std_frame': std_frame,
+                                              'pse_noframe': noframe_pse,
+                                              'std_noframe': noframe_std})
 
 # calculate group mean PSE and SEM for each frame angle, with no frame, and mean over all frame angles
 group_pse = {}
@@ -195,7 +199,6 @@ for cond in conditions:
 # plot mean PSE over all subjects
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(121)
-plt.hold(True)
 cdict = {'CCW': 'blue', 'NONE': 'green', 'CW': 'red'}
 for i_cond, cond in enumerate(conditions):
     ax2.fill_between(frames, (group_pse[cond]-group_sem[cond]),
