@@ -121,6 +121,7 @@ def fit_sigmoid(data, xdata_range=None, gammaEqLambda=False,
 def plot_psychometric_curve(ax, stimRange, psy, stimuli, resp_ratio, col):
     ax.plot(stimRange, psy, lw=2.5, color=col)
     ax.plot(stimuli, resp_ratio, 'o', color=col)
+    # ax.plot(stimuli, resp_ratio, 'o', markeredgecolor=col, markerfacecolor="None")
     ax.set_xlim([-25,25])
     ax.set_ylim([-0.05,1.05])
     ax.spines['top'].set_visible(False)

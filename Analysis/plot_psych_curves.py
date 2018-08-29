@@ -24,9 +24,8 @@ curves_for_plotting = ["-22.5", "0", "22.5"]
 if debug:
     subjects = [0, 1]
 
-# colourmap for plotting
-cmap = plt.cm.plasma(np.linspace(0, 1, len(frame_angles)-1))
-cmap = np.vstack((cmap, cmap[0,:])) # repeat first colour to plot x=-45 and x=45 in the same colour
+# colours for plotting
+colours = ["black", "black", "indigo", "black", "green", "black", "orangered", "black", "black"]
 
 pse = {cond: np.empty([len(subjects), len(frame_angles)]) for cond in conditions}
 std_frame = {cond: np.empty([len(subjects), len(frame_angles)]) for cond in conditions}
@@ -73,9 +72,9 @@ for sj in subjects:
             xydata = success_ratio(stims, resps)
             psy, psy_params = fit_sigmoid(xydata, xdata_range=stimRange, noLapses=True)
 
+            col = colours[i_frame]
             # plot response ratios and psychometric curves
             if frame_ang in curves_for_plotting:
-                col = cmap[i_frame, :]
                 plot_psychometric_curve(ax_psy, stimRange, psy, xydata[0], xydata[1], col)
 
             # collect PSE and std of each psychometric function
@@ -85,8 +84,8 @@ for sj in subjects:
             else:
                 pselist.append(psy_params[0])
                 stdlist.append(1/psy_params[1])
-        pse[cond][sj, 0:-1] = pselist
-        pse[cond][sj, -1] = pselist[0]
+        pselist.append(pselist[0])
+        pse[cond][sj, :] = pselist
         std_frame[cond][sj, 0:-1] = stdlist
         std_frame[cond][sj, -1] = stdlist[0]
         mean_frames_pse[sj][cond] = np.mean(pselist)
@@ -94,37 +93,24 @@ for sj in subjects:
         # format plots
         ax_psy.set_title(cond)
         ax_psy.set_ylim([-0.1, 1.1])
-        ax_psy.set_xlim([-10, 10])
-        ax_psy.set_xticks([-10, -5, 0, 5, 10])
+        ax_psy.set_xlim([-17, 17])
+        # ax_psy.set_xticks([-10, -5, 0, 5, 10])
         if cond == 'NONE':
             ax_psy.tick_params(axis='both', which='both', left='on', labelleft='on')
             ax_psy.set_ylabel('Proportion \'CW\' responses')
         if cond == 'CCW':
             ax_psy.set_xlabel('Line orientation (deg)')
 
-        # fit sine to PSE data using arrays of initial guesses for the parameters
+        # plot PSE
         frames = [-45, -33.75, -22.5, -11.25, 0, 11.25, 22.5, 33.75, 45]
-        frames_rad = np.deg2rad(frames)
-        pse_full_period = pselist[:]
-        pse_full_period.append(pselist[0]) # -45 = 45
-        amp_guesses = np.linspace(0, 10, 5)
-        phase_guesses = np.linspace(-(np.pi/4), np.pi/4, 5)
-        bias_guesses = np.linspace(-10, 10, 5)
-        period = np.pi/2.0 # one period goes from -45 to 45 deg
+        for frame, mu, colour in zip(frames, pselist, colours):
+            ax_pse.plot(frame, mu, "o", color=colour)
+            # ax_pse.plot(frame, mu, "o", markeredgecolor=colour, markerfacecolor="None")
 
-        # frame=45 point not included in fit because it is a duplicate of the -45 data point
-        amp, phaseshift, bias, rmse = fit_sine_fixed_freq(frames_rad[0:-1], pselist, amp_guesses,
-                                              phase_guesses, bias_guesses, period)
-        rmse_list.append(rmse)
-
-        # save sine parameters and plot sines with the data
-        amplitudes[sj][cond] = amp
-        phases[sj][cond] = phaseshift
-        sine_rmse[sj][cond] = rmse
-        plot_sinusoid_data(frames_rad, pse_full_period, amp, period,
-                           phaseshift, bias, colourmap=cmap, ax=ax_pse)
-        ax_pse.set_ylim([-6, 3])
-        ax_pse.set_yticks([-6, -3, 0, 3])
+        ax_pse.set_ylim([-6, 7])
+        ax_pse.spines['top'].set_visible(False)
+        ax_pse.spines['right'].set_visible(False)
+        # ax_pse.set_yticks([-6, -3, 0, 3])
         ax_pse.set_title(cond)
         if cond == 'NONE':
             ax_pse.tick_params(axis='both', which='both', left='on', labelleft='on')
@@ -133,4 +119,6 @@ for sj in subjects:
             ax_pse.set_xlabel('Frame angle (deg)')
 
     plt.tight_layout()
+    # fname = "sj_{0}".format((sj + 1))
+    # plt.savefig(fname)
 plt.show()
