@@ -25,7 +25,7 @@ if debug:
     subjects = [0, 1]
 
 # colours for plotting
-colours = ["black", "black", "indigo", "black", "green", "black", "orangered", "black", "black"]
+colours = ["grey", "grey", "indigo", "grey", "green", "grey", "orangered", "grey", "grey"]
 
 pse = {cond: np.empty([len(subjects), len(frame_angles)]) for cond in conditions}
 std_frame = {cond: np.empty([len(subjects), len(frame_angles)]) for cond in conditions}

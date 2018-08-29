@@ -172,6 +172,8 @@ if not debug:
         pickle.dump(std_frame, fhandle)
     with open('noframe_pse_all_sj.pkl', 'wb') as fhandle:
         pickle.dump(noframe_pse, fhandle)
+    with open('noframe_std_all_sj.pkl', 'wb') as fhandle:
+        pickle.dump(noframe_std, fhandle)
     scipy.io.savemat('pse_all_sj.mat', mdict={'pse_frame': pse,
                                               'std_frame': std_frame,
                                               'pse_noframe': noframe_pse,
